@@ -1,30 +1,32 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
-import { cartReducer, initialCart } from './cart.js'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Header from './components/Header.jsx'
 import ProductList from './components/ProductList.jsx'
 import SearchBar from './components/SearchBar.jsx'
 import { products } from './data.js'
+import useCart from './hooks/useCart.js'
 import './App.css'
 
 function App() {
   const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('')
   const [onlyInStock, setOnlyInStock] = useState(false)
-  const [cart, dispatch] = useReducer(cartReducer, initialCart)
+  const [isPending, startTransition] = useTransition()
   const inputRef = useRef(null)
+  const { items, totalCount, totalPrice, add, remove, clear } = useCart()
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
+  function handleSearch(value) {
+    setQuery(value)
+    startTransition(() => {
+      setFilter(value)
+    })
+  }
+
   const visibleProducts = useMemo(() => {
-    const preparedQuery = query.trim().toLowerCase()
+    const preparedQuery = filter.trim().toLowerCase()
 
     return products.filter((product) => {
       const matchesQuery = product.title.toLowerCase().includes(preparedQuery)
@@ -32,57 +34,36 @@ function App() {
 
       return matchesQuery && matchesStock
     })
-  }, [query, onlyInStock])
+  }, [filter, onlyInStock])
 
   const qtyById = useMemo(
-    () =>
-      Object.fromEntries(cart.items.map((item) => [item.id, item.qty])),
-    [cart.items],
+    () => Object.fromEntries(items.map((item) => [item.id, item.qty])),
+    [items],
   )
-
-  const totalCount = useMemo(
-    () => cart.items.reduce((sum, item) => sum + item.qty, 0),
-    [cart.items],
-  )
-
-  const totalPrice = useMemo(
-    () =>
-      cart.items.reduce((sum, item) => sum + item.price * item.qty, 0),
-    [cart.items],
-  )
-
-  const handleAdd = useCallback((product) => {
-    dispatch({ type: 'add', product })
-  }, [])
-
-  const handleRemove = useCallback((id) => {
-    dispatch({ type: 'remove', id })
-  }, [])
-
-  const handleClear = useCallback(() => {
-    dispatch({ type: 'clear' })
-  }, [])
 
   return (
     <main className="page">
       <Header
         totalCount={totalCount}
         totalPrice={totalPrice}
-        onClear={handleClear}
+        onClear={clear}
       />
       <SearchBar
         query={query}
         onlyInStock={onlyInStock}
         inputRef={inputRef}
-        onQueryChange={setQuery}
+        onQueryChange={handleSearch}
         onStockChange={setOnlyInStock}
       />
-      <p className="result-count">Найдено: {visibleProducts.length}</p>
+      <div className="result-row">
+        <span className="result-count">Найдено: {visibleProducts.length}</span>
+        {isPending && <span className="pending-message">Обновляем список…</span>}
+      </div>
       <ProductList
         products={visibleProducts}
         qtyById={qtyById}
-        onAdd={handleAdd}
-        onRemove={handleRemove}
+        onAdd={add}
+        onRemove={remove}
       />
     </main>
   )

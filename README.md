@@ -1,16 +1,43 @@
-# React + Vite
+# Каталог товаров
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Учебное приложение на React: каталог из 5 000 товаров с поиском, фильтром по наличию и корзиной.
 
-Currently, two official plugins are available:
+## Запуск
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Проверка проекта:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run lint
+npm run build
+```
 
-## Expanding the ESLint configuration
+## Что реализовано
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- поиск без учёта регистра и пробелов по краям строки;
+- фильтр «Только в наличии» и счётчик найденных товаров;
+- автофокус в поле поиска после загрузки страницы;
+- корзина на `useReducer`: добавление, удаление и очистка;
+- подсчёт общего количества и стоимости товаров;
+- `memo`, `useCallback` и `useMemo` для сокращения перерисовок;
+- отзывчивый поиск через `useTransition`;
+- логика корзины вынесена в пользовательский хук `useCart`.
+
+## Проверка перерисовок
+
+После очистки консоли один клик по кнопке «В корзину» добавляет одну строку `render`: перерисовывается только изменившаяся карточка.
+
+![Одна перерисовка карточки](docs/console-render.png)
+
+`useCallback` нужен для сохранения ссылок на обработчики. Без него при каждом рендере `App` создавались бы новые функции, поверхностное сравнение props в `memo` считало бы их изменившимися, и все карточки рендерились бы снова.
+
+## Коммиты
+
+- `step-1` — поиск и фильтр;
+- `step-2` — корзина на `useReducer`;
+- `step-3` — оптимизация перерисовок;
+- `step-4` — `useTransition` и `useCart`.
