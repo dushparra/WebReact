@@ -1,6 +1,6 @@
 import ProductCard from './ProductCard.jsx'
 
-function ProductList({ products }) {
+function ProductList({ products, cart, onAdd, onRemove }) {
   if (products.length === 0) {
     return <p className="empty-message">Товары не найдены</p>
   }
@@ -8,7 +8,13 @@ function ProductList({ products }) {
   return (
     <section className="product-list" aria-label="Каталог товаров">
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          qty={cart.items.find((item) => item.id === product.id)?.qty ?? 0}
+          onAdd={onAdd}
+          onRemove={onRemove}
+        />
       ))}
     </section>
   )
