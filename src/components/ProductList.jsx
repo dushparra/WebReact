@@ -1,6 +1,6 @@
 import ProductCard from './ProductCard.jsx'
 
-function ProductList({ products, cart, onAdd, onRemove }) {
+function ProductList({ products, qtyById, onAdd, onRemove }) {
   if (products.length === 0) {
     return <p className="empty-message">Товары не найдены</p>
   }
@@ -11,7 +11,7 @@ function ProductList({ products, cart, onAdd, onRemove }) {
         <ProductCard
           key={product.id}
           product={product}
-          qty={cart.items.find((item) => item.id === product.id)?.qty ?? 0}
+          qty={qtyById[product.id] ?? 0}
           onAdd={onAdd}
           onRemove={onRemove}
         />
